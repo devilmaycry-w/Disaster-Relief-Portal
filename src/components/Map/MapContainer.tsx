@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import CompassButton from '../UI/CompassButton';
+import FloatingActionButton from '../UI/FloatingActionButton';
 import { Search } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -218,8 +218,11 @@ const ReliefMap: React.FC = () => {
 
   return (
     <div className="w-full h-full relative overflow-hidden">
-      {/* Search Bar */}
-      <form onSubmit={handleSearch} className="absolute top-4 left-1/2 z-30 -translate-x-1/2 w-[90vw] max-w-md flex glass-strong rounded-2xl shadow-xl border border-white/30 px-4 py-3 items-center gap-3 animate-fadeIn">
+      {/* Search Bar (desktop only) */}
+      <form
+        onSubmit={handleSearch}
+        className="hidden md:flex absolute top-4 left-1/2 z-30 -translate-x-1/2 w-[90vw] max-w-md glass-strong rounded-2xl shadow-xl border border-white/30 px-4 py-3 items-center gap-3 animate-fadeIn"
+      >
         <Search size={20} className="text-blue-500" />
         <input
           type="text"
@@ -228,9 +231,9 @@ const ReliefMap: React.FC = () => {
           placeholder="Search place..."
           className="flex-1 bg-transparent outline-none text-sm font-medium placeholder-gray-500"
         />
-        <button 
-          type="submit" 
-          className="text-blue-600 font-semibold px-4 py-2 rounded-xl hover:bg-blue-50 transition-all duration-200 disabled:opacity-60 interactive" 
+        <button
+          type="submit"
+          className="text-blue-600 font-semibold px-4 py-2 rounded-xl hover:bg-blue-50 transition-all duration-200 disabled:opacity-60 interactive"
           disabled={searchLoading}
         >
           {searchLoading ? (
@@ -293,8 +296,11 @@ const ReliefMap: React.FC = () => {
       )}
 
       {/* Compass and + button area with enhanced positioning */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4 md:bottom-8 md:right-8 animate-fadeIn" style={{ animationDelay: '0.5s' }}>
-        <CompassButton />
+      <div
+        className="fixed bottom-24 right-6 z-50 flex flex-col items-end gap-4 md:bottom-24 md:right-8 animate-fadeIn"
+        style={{ animationDelay: '0.5s', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
+        <FloatingActionButton />
       </div>
     </div>
   );

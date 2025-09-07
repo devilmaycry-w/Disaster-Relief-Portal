@@ -24,11 +24,13 @@ const FloatingActionButton: React.FC = () => {
           text-white p-4 rounded-full shadow-xl hover:shadow-2xl 
           transition-all duration-300 transform hover:scale-110 active:scale-95
           border-2 border-white/20 backdrop-blur-md
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2
           ${isPressed ? 'scale-95' : ''}
           ${state.isSubmitting ? 'animate-pulse-subtle' : ''}
         `}
         aria-label="Submit new report"
         disabled={state.isSubmitting}
+        tabIndex={0}
       >
         {/* Glow effect */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-500 rounded-full blur-md opacity-50 -z-10"></div>

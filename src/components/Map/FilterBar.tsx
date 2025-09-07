@@ -100,12 +100,14 @@ const FilterBar: React.FC = () => {
               onClick={() => handleFilterToggle(type)}
               className={`
                 flex-shrink-0 flex items-center space-x-2 px-4 py-2.5 rounded-2xl text-xs font-semibold
-                transition-all duration-300 border backdrop-blur-md interactive
+                transition-all duration-300 border backdrop-blur-md interactive focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2
                 ${isActive(type) 
                   ? `${activeColor} border-transparent shadow-lg transform scale-105` 
                   : `${color} border-white/20 hover:shadow-md hover:scale-102`
                 }
               `}
+              aria-label={`Filter by ${label}`}
+              tabIndex={0}
             >
               <Icon size={16} />
               <span>{label}</span>
@@ -121,6 +123,15 @@ const FilterBar: React.FC = () => {
             </button>
           ))}
         </div>
+        {/* Mobile: Active filters summary below filter bar */}
+        <div className="text-xs text-gray-600 font-medium bg-white/40 px-3 py-1 rounded-full backdrop-blur-md mt-2 text-center">
+          {state.activeFilters.includes('all') 
+            ? `Showing all ${state.reports.length} reports`
+            : `${state.reports.filter(report => 
+                state.activeFilters.includes(report.type)
+              ).length} of ${state.reports.length} reports`
+          }
+        </div>
       </div>
 
       {/* Desktop: Full filter bar */}
@@ -134,12 +145,14 @@ const FilterBar: React.FC = () => {
                 onClick={() => handleFilterToggle(type)}
                 className={`
                   flex items-center space-x-2 px-5 py-2.5 rounded-xl text-sm font-semibold
-                  transition-all duration-300 border backdrop-blur-md interactive
+                  transition-all duration-300 border backdrop-blur-md interactive focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2
                   ${isActive(type) 
                     ? `${activeColor} border-transparent shadow-lg transform scale-105` 
                     : `${color} border-white/20 hover:shadow-md hover:transform hover:scale-102`
                   }
                 `}
+                aria-label={`Filter by ${label}`}
+                tabIndex={0}
               >
                 <Icon size={18} />
                 <span>{label}</span>

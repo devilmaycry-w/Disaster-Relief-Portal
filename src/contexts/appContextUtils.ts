@@ -32,6 +32,7 @@ export type AppAction =
   | { type: 'TOGGLE_REPORT_MODAL'; payload?: boolean }
   | { type: 'TOGGLE_ALERTS_MODAL'; payload?: boolean }
   | { type: 'MARK_ALERT_READ'; payload: string }
+  | { type: 'MARK_ALL_ALERTS_READ' }
   | { type: 'SET_UNREAD_ALERTS'; payload: string[] };
 
 export const initialState: AppState = {
@@ -56,6 +57,9 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       const newSet = new Set(state.unreadAlerts);
       newSet.delete(action.payload);
       return { ...state, unreadAlerts: newSet };
+    }
+    case 'MARK_ALL_ALERTS_READ': {
+      return { ...state, unreadAlerts: new Set() };
     }
     case 'SET_UNREAD_ALERTS':
       return { ...state, unreadAlerts: new Set(action.payload) };

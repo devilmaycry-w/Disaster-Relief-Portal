@@ -46,6 +46,7 @@ html {
   scroll-behavior: smooth;
 }
 
+
 html, body {
   margin: 0;
   padding: 0;
@@ -54,7 +55,8 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  background-color: var(--gray-50);
+  /* Radial gradient background, matches splash screen */
+  background: radial-gradient(125% 125% at 50% 90%, #fff 40%, #6366f1 100%);
 }
 
 #root {
@@ -114,7 +116,7 @@ html, body {
 .btn-secondary {
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: var(--blur-backdrop);
-  color: var(--gray-700);
+  color: var(--black-700);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--border-radius);
   padding: 12px 24px;
@@ -126,7 +128,7 @@ html, body {
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(133, 126, 228, 0.9);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }

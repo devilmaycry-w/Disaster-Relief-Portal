@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import AlertBanner from './Alerts/AlertBanner';
+import { Shield } from 'lucide-react';
 
 
 const AlertsPage: React.FC = () => {
@@ -48,6 +49,20 @@ const AlertsPage: React.FC = () => {
               <AlertBanner alert={alert} />
             </div>
           ))}
+        </div>
+        
+        {/* Submit Report Button */}
+        <div className="card-floating p-6 mt-6 animate-fadeIn" style={{ animationDelay: '0.5s' }}>
+          <div className="text-center">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Need Help?</h3>
+            <p className="text-gray-600 mb-4">Report an emergency or share information to help others.</p>
+            <button
+              onClick={() => dispatch({ type: 'TOGGLE_REPORT_MODAL' })}
+              className="btn-primary w-full py-3 text-lg"
+            >
+              Submit Report
+            </button>
+          </div>
         </div>
         
         {/* Empty State */}

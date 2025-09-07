@@ -175,7 +175,9 @@ const ReportModal: React.FC = () => {
           <h2 className="text-xl font-bold text-gray-900 text-title">Submit Report</h2>
           <button
             onClick={() => dispatch({ type: 'TOGGLE_REPORT_MODAL', payload: false })}
-            className="p-2 hover:bg-gray-100 rounded-xl transition-all duration-200 interactive"
+            className="p-2 hover:bg-gray-100 rounded-xl transition-all duration-200 interactive focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2"
+            aria-label="Close report modal"
+            tabIndex={0}
           >
             <X size={20} />
           </button>
@@ -411,7 +413,9 @@ const ReportModal: React.FC = () => {
             <button
               type="submit"
               disabled={state.isSubmitting}
-              className="w-full btn-primary py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              className="w-full btn-primary py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2"
+              aria-label="Submit report"
+              tabIndex={0}
             >
               {state.isSubmitting ? (
                 <>

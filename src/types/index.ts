@@ -36,7 +36,7 @@ export interface Alert {
 
 export interface User {
   id: string;
-  name: string;
+  name?: string;
   email?: string;
   role: 'user' | 'volunteer' | 'admin';
   location?: { lat: number; lng: number };
