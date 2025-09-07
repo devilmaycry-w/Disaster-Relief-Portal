@@ -1,13 +1,18 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { X, AlertTriangle, Info, CheckCircle, Clock } from 'lucide-react';
 import { useAppContext } from '../../contexts/AppContext';
+import { Alert } from '../../types';
 
-const AlertsModal: React.FC = () => {
+const AlertsModal: React.FC = React.memo(() => {
   const { state, dispatch } = useAppContext();
 
-  if (!state.showAlertsModal) return null;
+  // Memoize filtered alerts
+  const activeAlerts = useMemo(() => {
+    return state.alerts.filter(alert => alert.active);
+  }, [state.alerts]);
 
-  const getAlertIcon = (type: string) => {
+  // Memoize utility functions
+  const getAlertIcon = useCallback((type: string) => {
     switch (type) {
       case 'danger':
         return <AlertTriangle size={20} className="text-red-500" />;
@@ -20,9 +25,9 @@ const AlertsModal: React.FC = () => {
       default:
         return <Info size={20} className="text-gray-500" />;
     }
-  };
+  }, []);
 
-  const getAlertColor = (type: string) => {
+  const getAlertColor = useCallback((type: string) => {
     const colors = {
       danger: 'border-l-red-500 bg-red-50',
       warning: 'border-l-yellow-500 bg-yellow-50',
@@ -30,24 +35,102 @@ const AlertsModal: React.FC = () => {
       success: 'border-l-green-500 bg-green-50',
     };
     return colors[type as keyof typeof colors] || colors.info;
-  };
+  }, []);
 
-  const formatTimeAgo = (date: Date) => {
+  const formatTimeAgo = useCallback((date: Date) => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
-    
+
     if (diffMins < 1) return 'just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     const diffHours = Math.floor(diffMins / 60);
     if (diffHours < 24) return `${diffHours}h ago`;
     const diffDays = Math.floor(diffHours / 24);
     return `${diffDays}d ago`;
-  };
+  }, []);
 
-  const activeAlerts = state.alerts.filter(alert => alert.active);
+  // Memoize event handlers
+  const handleClose = useCallback(() => {
+    dispatch({ type: 'TOGGLE_ALERTS_MODAL', payload: false });
+  }, [dispatch]);
 
-  return (
+  const handleViewOnMap = useCallback((alert: Alert) => {
+    console.log('Alert data:', alert);
+    console.log('User location:', state.userLocation);
+
+    // Determine the destination coordinates
+    let destinationLat: number | null = null;
+    let destinationLng: number | null = null;
+
+    if (alert.area && alert.area.center && typeof alert.area.center.lat === 'number' && typeof alert.area.center.lng === 'number') {
+      // Use area center if available and valid
+      destinationLat = alert.area.center.lat;
+      destinationLng = alert.area.center.lng;
+      console.log('Using area center:', destinationLat, destinationLng);
+    } else if (alert.location && typeof alert.location.lat === 'number' && typeof alert.location.lng === 'number') {
+      // Use direct location if available and valid
+      destinationLat = alert.location.lat;
+      destinationLng = alert.location.lng;
+      console.log('Using direct location:', destinationLat, destinationLng);
+    }
+
+    if (destinationLat !== null && destinationLng !== null && !isNaN(destinationLat) && !isNaN(destinationLng)) {
+      const userLocation = state.userLocation;
+      let googleMapsUrl;
+
+      if (userLocation && typeof userLocation.lat === 'number' && typeof userLocation.lng === 'number' && !isNaN(userLocation.lat) && !isNaN(userLocation.lng)) {
+        // Directions from current location to destination
+        googleMapsUrl = `https://www.google.com/maps/dir/${userLocation.lat},${userLocation.lng}/${destinationLat},${destinationLng}`;
+        console.log('Using directions URL:', googleMapsUrl);
+      } else {
+        // Just show the destination location with zoom
+        googleMapsUrl = `https://www.google.com/maps?q=${destinationLat},${destinationLng}&ll=${destinationLat},${destinationLng}&z=15`;
+        console.log('Using location URL (no user location):', googleMapsUrl);
+        window.alert('Using destination location only. For turn-by-turn directions, please refresh the page to detect your location.');
+      }
+
+      window.open(googleMapsUrl, '_blank');
+    } else {
+      console.error('No valid destination coordinates found for alert:', alert);
+      window.alert('Unable to find valid location coordinates for this alert. Please try again or contact support.');
+    }
+  }, [state.userLocation]);
+
+  const handleShare = useCallback((alert: Alert) => {
+    // Get user's IP address (simulated for demo)
+    const userIP = '192.168.1.100'; // In real app, this would come from backend
+    const locationInfo = alert.area
+      ? `📍 Location: ${alert.area.center.lat.toFixed(4)}, ${alert.area.center.lng.toFixed(4)} (Radius: ${(alert.area.radius / 1000).toFixed(1)}km)`
+      : alert.location
+      ? `📍 Location: ${alert.location.lat.toFixed(4)}, ${alert.location.lng.toFixed(4)}`
+      : '📍 Location: Not specified';
+
+    const shareText = `🚨 URGENT EMERGENCY ALERT 🚨
+
+📢 Alert: ${alert.title}
+📝 Description: ${alert.message}
+${locationInfo}
+👤 Reported by: Anonymous user (IP: ${userIP})
+⏰ Time: ${alert.createdAt.toLocaleString()}
+📊 Status: ${alert.active ? 'ACTIVE' : 'INACTIVE'}
+
+⚠️ This is a critical emergency situation requiring immediate attention!
+
+Please help by:
+• Contacting local authorities if you're in the area
+• Sharing this information with others who might be affected
+• Providing assistance if you have relevant resources
+• Staying safe and following official guidelines
+
+#EmergencyAlert #DisasterRelief #ReliefMap`;
+
+    // Create WhatsApp share URL
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+    window.open(whatsappUrl, '_blank');
+  }, []);
+
+  if (!state.showAlertsModal) return null;  return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end md:items-center justify-center z-50 p-4">
       <div className="bg-white w-full max-w-2xl rounded-t-2xl md:rounded-2xl max-h-[90vh] overflow-hidden">
         {/* Header */}
@@ -64,7 +147,7 @@ const AlertsModal: React.FC = () => {
             </div>
           </div>
           <button
-            onClick={() => dispatch({ type: 'TOGGLE_ALERTS_MODAL', payload: false })}
+            onClick={handleClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <X size={20} />
@@ -118,11 +201,17 @@ const AlertsModal: React.FC = () => {
 
                   {/* Alert Actions */}
                   <div className="mt-3 pt-3 border-t border-gray-200 flex space-x-2">
-                    <button className="text-blue-600 text-sm font-medium hover:underline">
+                    <button
+                      onClick={() => handleViewOnMap(alert)}
+                      className="text-blue-600 text-sm font-medium hover:underline"
+                    >
                       View on Map
                     </button>
-                    <button className="text-gray-600 text-sm hover:underline">
-                      Share Alert
+                    <button
+                      onClick={() => handleShare(alert)}
+                      className="text-green-600 text-sm font-medium hover:underline"
+                    >
+                      Share on WhatsApp
                     </button>
                   </div>
                 </div>
@@ -161,6 +250,6 @@ const AlertsModal: React.FC = () => {
       </div>
     </div>
   );
-};
+});
 
 export default AlertsModal;

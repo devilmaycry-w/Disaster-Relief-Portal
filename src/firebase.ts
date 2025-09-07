@@ -159,6 +159,53 @@ export const testGetReportsOnce = async () => {
   }
 };
 
+// Test function to create sample alerts for testing
+export const createSampleAlerts = async () => {
+  if (!db) await initFirebase();
+  if (!db) throw new Error('RTDB not initialized');
+
+  const sampleAlerts = [
+    {
+      title: 'Flood Warning - River Overflow',
+      message: 'Heavy rainfall has caused the local river to overflow. Residents in low-lying areas should evacuate immediately.',
+      type: 'danger',
+      area: {
+        center: { lat: 40.7128, lng: -74.0060 }, // New York City area
+        radius: 5000
+      },
+      active: true
+    },
+    {
+      title: 'Medical Emergency - Hospital Overload',
+      message: 'Local hospital is experiencing high patient volume due to flooding. Please avoid non-emergency visits.',
+      type: 'warning',
+      location: { lat: 40.7589, lng: -73.9851 }, // Times Square area
+      active: true
+    },
+    {
+      title: 'Shelter Available - Community Center',
+      message: 'Emergency shelter has been set up at the community center with capacity for 200 people.',
+      type: 'info',
+      area: {
+        center: { lat: 40.7505, lng: -73.9934 }, // Midtown Manhattan
+        radius: 2000
+      },
+      active: true
+    }
+  ];
+
+  try {
+    for (const alert of sampleAlerts) {
+      await addAlert(alert);
+    }
+    console.log('Sample alerts created successfully!');
+    return { ok: true, message: 'Sample alerts created' };
+  } catch (err: any) {
+    console.error('Failed to create sample alerts:', err);
+    return { ok: false, error: err?.message || err };
+  }
+};
+
 // Auth helpers
 export const signInWithGoogle = async () => {
   if (!auth) await initFirebase();

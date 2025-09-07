@@ -1,18 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import AlertBanner from './Alerts/AlertBanner';
-import { Shield } from 'lucide-react';
+import { Shield, Plus } from 'lucide-react';
+import { createSampleAlerts } from '../firebase';
+import { Alert } from '../types';
 
 
 const AlertsPage: React.FC = () => {
   const { state, dispatch } = useAppContext();
+  const [creatingAlerts, setCreatingAlerts] = useState(false);
   const unreadCount = state.alerts.filter(a => state.unreadAlerts.has(a.id)).length;
 
-  const handleAlertClick = (alert: any) => {
+  const handleAlertClick = (alert: Alert) => {
     dispatch({ type: 'MARK_ALERT_READ', payload: alert.id });
     if (alert.location && typeof alert.location.lat === 'number' && typeof alert.location.lng === 'number') {
       dispatch({ type: 'SET_MAP_CENTER', payload: { lat: alert.location.lat, lng: alert.location.lng } });
       dispatch({ type: 'SET_ROUTE', payload: 'home' });
+    }
+  };
+
+  const handleCreateSampleAlerts = async () => {
+    setCreatingAlerts(true);
+    try {
+      const result = await createSampleAlerts();
+      if (result.ok) {
+        console.log('Sample alerts created successfully!');
+      } else {
+        console.error('Failed to create sample alerts:', result.error);
+      }
+    } catch (error) {
+      console.error('Error creating sample alerts:', error);
+    } finally {
+      setCreatingAlerts(false);
     }
   };
 
@@ -51,19 +70,22 @@ const AlertsPage: React.FC = () => {
           ))}
         </div>
         
-        {/* Submit Report Button */}
-        <div className="card-floating p-6 mt-6 animate-fadeIn" style={{ animationDelay: '0.5s' }}>
-          <div className="text-center">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Need Help?</h3>
-            <p className="text-gray-600 mb-4">Report an emergency or share information to help others.</p>
-            <button
-              onClick={() => dispatch({ type: 'TOGGLE_REPORT_MODAL' })}
-              className="btn-primary w-full py-3 text-lg"
-            >
-              Submit Report
-            </button>
+        {/* Test Button for Sample Alerts */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="card-floating p-4 mt-4 animate-fadeIn" style={{ animationDelay: '0.6s' }}>
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-2">Development: Create sample alerts for testing</p>
+              <button
+                onClick={handleCreateSampleAlerts}
+                disabled={creatingAlerts}
+                className="btn-secondary w-full py-2 text-sm flex items-center justify-center gap-2"
+              >
+                <Plus size={16} />
+                {creatingAlerts ? 'Creating...' : 'Create Sample Alerts'}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
         
         {/* Empty State */}
         {state.alerts.length === 0 && (

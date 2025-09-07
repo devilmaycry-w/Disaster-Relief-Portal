@@ -1,28 +1,14 @@
-import React from 'react';
-import { X, MapPin, Clock, Phone, Users, CheckCircle, AlertCircle, Navigation } from 'lucide-react';
+import React, { useMemo, useCallback } from 'react';
+import { X, MapPin, Clock, Phone, Users, CheckCircle, AlertCircle, Navigation, Share2 } from 'lucide-react';
 import { useAppContext } from '../../contexts/AppContext';
 
-const ReportDetails: React.FC = () => {
+const ReportDetails: React.FC = React.memo(() => {
   const { state, dispatch } = useAppContext();
 
-  if (!state.selectedReport) return null;
+  // Memoize expensive computations
+  const typeInfo = useMemo(() => {
+    if (!state.selectedReport) return null;
 
-  const report = state.selectedReport;
-
-  const formatTimeAgo = (date: Date) => {
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    
-    if (diffMins < 1) return 'just now';
-    if (diffMins < 60) return `${diffMins} minutes ago`;
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours} hours ago`;
-    const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays} days ago`;
-  };
-
-  const getTypeInfo = (type: string) => {
     const types = {
       'help-needed': {
         label: 'Help Needed',
@@ -55,36 +41,129 @@ const ReportDetails: React.FC = () => {
         description: 'Volunteer assistance available',
       },
     };
-    return types[type as keyof typeof types] || types['help-needed'];
-  };
+    return types[state.selectedReport.type as keyof typeof types] || types['help-needed'];
+  }, [state.selectedReport]);
 
-  const getPriorityInfo = (priority: string) => {
+  const priorityInfo = useMemo(() => {
+    if (!state.selectedReport) return null;
+
     const priorities = {
       critical: { color: 'bg-red-500 text-white', label: 'CRITICAL' },
       high: { color: 'bg-orange-500 text-white', label: 'HIGH' },
       medium: { color: 'bg-yellow-500 text-black', label: 'MEDIUM' },
       low: { color: 'bg-green-500 text-white', label: 'LOW' },
     };
-    return priorities[priority as keyof typeof priorities] || priorities.medium;
-  };
+    return priorities[state.selectedReport.priority as keyof typeof priorities] || priorities.medium;
+  }, [state.selectedReport]);
 
-  const typeInfo = getTypeInfo(report.type);
-  const priorityInfo = getPriorityInfo(report.priority);
-  const TypeIcon = typeInfo.icon;
+  const timeAgo = useMemo(() => {
+    if (!state.selectedReport) return '';
 
-  const handleNavigate = () => {
-    const { lat, lng } = report.location;
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-    window.open(url, '_blank');
-  };
+    const formatTimeAgo = (date: Date) => {
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
 
-  const handleCall = () => {
-    if (report.contact) {
-      window.location.href = `tel:${report.contact}`;
+      if (diffMins < 1) return 'just now';
+      if (diffMins < 60) return `${diffMins} minutes ago`;
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours} hours ago`;
+      const diffDays = Math.floor(diffHours / 24);
+      return `${diffDays} days ago`;
+    };
+    return formatTimeAgo(state.selectedReport.createdAt);
+  }, [state.selectedReport]);
+
+  const locationInfo = useMemo(() => {
+    if (!state.selectedReport) return '';
+
+    return state.selectedReport.location.address
+      ? `📍 Location: ${state.selectedReport.location.address} (${state.selectedReport.location.lat.toFixed(4)}, ${state.selectedReport.location.lng.toFixed(4)})`
+      : `📍 Location: ${state.selectedReport.location.lat.toFixed(4)}, ${state.selectedReport.location.lng.toFixed(4)}`;
+  }, [state.selectedReport]);
+
+  const shareText = useMemo(() => {
+    if (!state.selectedReport || !typeInfo) return '';
+
+    const userIP = '192.168.1.100'; // In real app, this would come from backend
+
+    return `🚨 URGENT REPORT 🚨
+
+📢 ${typeInfo.label}: ${state.selectedReport.title}
+📝 Description: ${state.selectedReport.description}
+${locationInfo}
+👤 Reported by: Anonymous user (IP: ${userIP})
+⏰ Time: ${state.selectedReport.createdAt.toLocaleString()}
+📊 Status: ${state.selectedReport.status.toUpperCase()}
+🚨 Priority: ${state.selectedReport.priority.toUpperCase()}
+
+${state.selectedReport.contact ? `📞 Contact: ${state.selectedReport.contact}` : ''}
+${state.selectedReport.capacity ? `👥 Capacity: ${state.selectedReport.capacity} people` : ''}
+${state.selectedReport.resourceType ? `📦 Resource Type: ${state.selectedReport.resourceType}` : ''}
+
+⚠️ This report requires immediate attention!
+
+Please help by:
+• Contacting the reporter if you can assist
+• Sharing this information with relevant authorities
+• Providing support if you have relevant resources
+• Staying safe and following official guidelines
+
+#EmergencyReport #DisasterRelief #ReliefMap`;
+  }, [state.selectedReport, typeInfo, locationInfo]);
+
+  // Memoize event handlers
+  const handleClose = useCallback(() => {
+    dispatch({ type: 'SET_SELECTED_REPORT', payload: null });
+  }, [dispatch]);
+
+  const handleNavigate = useCallback(() => {
+    if (!state.selectedReport) return;
+
+    console.log('Report location:', state.selectedReport.location);
+    console.log('User location:', state.userLocation);
+
+    const userLocation = state.userLocation;
+    const { lat, lng } = state.selectedReport.location;
+
+    // Validate coordinates
+    if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) {
+      console.error('Invalid report coordinates:', lat, lng);
+      window.alert('Invalid location coordinates for this report.');
+      return;
     }
-  };
 
-  return (
+    let url;
+    if (userLocation && typeof userLocation.lat === 'number' && typeof userLocation.lng === 'number' && !isNaN(userLocation.lat) && !isNaN(userLocation.lng)) {
+      // Get directions from current location to destination
+      url = `https://www.google.com/maps/dir/${userLocation.lat},${userLocation.lng}/${lat},${lng}`;
+      console.log('Using directions URL:', url);
+    } else {
+      // Fallback to just showing destination with zoom
+      url = `https://www.google.com/maps?q=${lat},${lng}&ll=${lat},${lng}&z=15`;
+      console.log('Using location URL (no user location):', url);
+      window.alert('Using destination location only. For turn-by-turn directions, please refresh the page to detect your location.');
+    }
+
+    window.open(url, '_blank');
+  }, [state.selectedReport, state.userLocation]);
+
+  const handleCall = useCallback(() => {
+    if (state.selectedReport?.contact) {
+      window.location.href = `tel:${state.selectedReport.contact}`;
+    }
+  }, [state.selectedReport]);
+
+  const handleShare = useCallback(() => {
+    // Create WhatsApp share URL
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+    window.open(whatsappUrl, '_blank');
+  }, [shareText]);
+
+  if (!state.selectedReport || !typeInfo || !priorityInfo) return null;
+
+  const report = state.selectedReport;
+  const TypeIcon = typeInfo.icon;  return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end md:items-center justify-center z-50 p-4">
       <div className="bg-white w-full max-w-2xl rounded-t-2xl md:rounded-2xl max-h-[90vh] overflow-hidden">
         {/* Header */}
@@ -109,7 +188,7 @@ const ReportDetails: React.FC = () => {
             <p className="text-sm text-gray-600">{typeInfo.description}</p>
           </div>
           <button
-            onClick={() => dispatch({ type: 'SET_SELECTED_REPORT', payload: null })}
+            onClick={handleClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
           >
             <X size={20} />
@@ -156,7 +235,7 @@ const ReportDetails: React.FC = () => {
                 <div className="flex items-center space-x-2">
                   <Clock size={16} className="text-gray-500" />
                   <span className="text-gray-600">Reported:</span>
-                  <span className="font-medium">{formatTimeAgo(report.createdAt)}</span>
+                  <span className="font-medium">{timeAgo}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 flex items-center justify-center">
@@ -240,10 +319,17 @@ const ReportDetails: React.FC = () => {
               <Navigation size={18} className="mr-2" />
               Navigate
             </button>
+            <button
+              onClick={handleShare}
+              className="flex-1 bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center"
+            >
+              <Share2 size={18} className="mr-2" />
+              Share on WhatsApp
+            </button>
             {report.contact && (
               <button
                 onClick={handleCall}
-                className="flex-1 bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center"
+                className="flex-1 bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors flex items-center justify-center"
               >
                 <Phone size={18} className="mr-2" />
                 Call
@@ -254,6 +340,6 @@ const ReportDetails: React.FC = () => {
       </div>
     </div>
   );
-};
+});
 
 export default ReportDetails;

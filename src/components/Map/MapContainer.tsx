@@ -1,55 +1,72 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import FloatingActionButton from '../UI/FloatingActionButton';
 import { Search } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { useAppContext } from '../../contexts/AppContext';
 import { Report } from '../../types';
+import WeatherWidget from '../WeatherWidget';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default markers in React Leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+delete (L.Icon.Default.prototype as L.Icon.Default & { _getIconUrl?: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Custom marker icons for different report types
-const createIcon = (type: string, priority: string) => {
-  const colors = {
-    'help-needed': '#DC3545', // Red
-    'medical': '#FD7E14', // Orange
-    'safe-zone': '#28A745', // Green
-    'resources': '#007BFF', // Blue
-    'volunteer': '#6F42C1', // Purple
-  };
+// Memoized icon creation functions
+const useIconCache = () => {
+  return useMemo(() => {
+    const cache = new Map<string, L.DivIcon>();
 
-  const size = priority === 'critical' ? 30 : priority === 'high' ? 25 : 20;
-  
-  return L.divIcon({
-    className: 'custom-div-icon',
-    html: `
-      <div style="
-        background-color: ${colors[type as keyof typeof colors] || '#6C757D'};
-        width: ${size}px;
-        height: ${size}px;
-        border-radius: 50%;
-        border: 3px solid white;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
-        font-size: ${size > 20 ? '14px' : '12px'};
-      ">
-        ${getIconSymbol(type)}
-      </div>
-    `,
-    iconSize: [size + 6, size + 6],
-    iconAnchor: [(size + 6) / 2, (size + 6) / 2],
-  });
+    const createIcon = (type: string, priority: string) => {
+      const key = `${type}-${priority}`;
+      if (cache.has(key)) {
+        return cache.get(key)!;
+      }
+
+      const colors = {
+        'help-needed': '#DC3545', // Red
+        'medical': '#FD7E14', // Orange
+        'safe-zone': '#28A745', // Green
+        'resources': '#007BFF', // Blue
+        'volunteer': '#6F42C1', // Purple
+      };
+
+      const size = priority === 'critical' ? 30 : priority === 'high' ? 25 : 20;
+
+      const icon = L.divIcon({
+        className: 'custom-div-icon',
+        html: `
+          <div style="
+            background-color: ${colors[type as keyof typeof colors] || '#6C757D'};
+            width: ${size}px;
+            height: ${size}px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: ${size > 20 ? '14px' : '12px'};
+          ">
+            ${getIconSymbol(type)}
+          </div>
+        `,
+        iconSize: [size + 6, size + 6],
+        iconAnchor: [(size + 6) / 2, (size + 6) / 2],
+      });
+
+      cache.set(key, icon);
+      return icon;
+    };
+
+    return createIcon;
+  }, []);
 };
 
 const getIconSymbol = (type: string) => {
@@ -64,7 +81,7 @@ const getIconSymbol = (type: string) => {
 };
 
 // Component to handle map events and user location
-const MapController: React.FC = () => {
+const MapController: React.FC = React.memo(() => {
   const map = useMap();
   const { state } = useAppContext();
 
@@ -77,34 +94,35 @@ const MapController: React.FC = () => {
   }, [state.userLocation, state.mapCenter, map]);
 
   return null;
-};
+});
 
 // Component to filter and display markers
-const MapMarkers: React.FC = () => {
+const MapMarkers: React.FC = React.memo(() => {
   const { state, dispatch } = useAppContext();
+  const createIcon = useIconCache();
 
-  const filteredReports = state.reports.filter(report => 
-    state.activeFilters.includes('all') || state.activeFilters.includes(report.type)
-  );
+  // Memoize filtered reports
+  const filteredReports = useMemo(() => {
+    return state.reports.filter(report =>
+      state.activeFilters.includes('all') || state.activeFilters.includes(report.type)
+    );
+  }, [state.reports, state.activeFilters]);
 
-  const handleMarkerClick = (report: Report) => {
-    dispatch({ type: 'SET_SELECTED_REPORT', payload: report });
-  };
-
-  const formatTimeAgo = (date: Date) => {
+  // Memoize utility functions
+  const formatTimeAgo = useCallback((date: Date) => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
-    
+
     if (diffMins < 1) return 'just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     const diffHours = Math.floor(diffMins / 60);
     if (diffHours < 24) return `${diffHours}h ago`;
     const diffDays = Math.floor(diffHours / 24);
     return `${diffDays}d ago`;
-  };
+  }, []);
 
-  const getPriorityBadge = (priority: string) => {
+  const getPriorityBadge = useCallback((priority: string) => {
     const badges = {
       critical: 'bg-red-500 text-white',
       high: 'bg-orange-500 text-white',
@@ -112,9 +130,9 @@ const MapMarkers: React.FC = () => {
       low: 'bg-green-500 text-white',
     };
     return badges[priority as keyof typeof badges] || badges.medium;
-  };
+  }, []);
 
-  const getTypeLabel = (type: string) => {
+  const getTypeLabel = useCallback((type: string) => {
     const labels = {
       'help-needed': 'Help Needed',
       'medical': 'Medical Aid',
@@ -123,7 +141,12 @@ const MapMarkers: React.FC = () => {
       'volunteer': 'Volunteers',
     };
     return labels[type as keyof typeof labels] || type;
-  };
+  }, []);
+
+  // Memoize event handler
+  const handleMarkerClick = useCallback((report: Report) => {
+    dispatch({ type: 'SET_SELECTED_REPORT', payload: report });
+  }, [dispatch]);
 
   return (
     <>
@@ -146,23 +169,23 @@ const MapMarkers: React.FC = () => {
                   {formatTimeAgo(report.createdAt)}
                 </span>
               </div>
-              
+
               <h3 className="font-bold text-sm mb-1">{report.title}</h3>
               <p className="text-xs text-gray-600 mb-2">{getTypeLabel(report.type)}</p>
               <p className="text-sm text-gray-700 mb-2">{report.description}</p>
-              
+
               {report.location.address && (
                 <p className="text-xs text-gray-500 mb-2">📍 {report.location.address}</p>
               )}
-              
+
               {report.contact && (
                 <p className="text-xs text-blue-600 mb-2">📞 {report.contact}</p>
               )}
-              
+
               {report.capacity && (
                 <p className="text-xs text-gray-600">Capacity: {report.capacity}</p>
               )}
-              
+
               <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-200">
                 <button
                   onClick={() => handleMarkerClick(report)}
@@ -180,20 +203,23 @@ const MapMarkers: React.FC = () => {
       ))}
     </>
   );
-};
+});
 
-const ReliefMap: React.FC = () => {
+const ReliefMap: React.FC = React.memo(() => {
   const { state, dispatch } = useAppContext();
   const mapRef = useRef<L.Map>(null);
   const [search, setSearch] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
 
-  const defaultCenter: [number, number] = state.userLocation 
-    ? [state.userLocation.lat, state.userLocation.lng]
-    : [40.7128, -74.0060]; // Default to NYC
+  // Memoize default center
+  const defaultCenter: [number, number] = useMemo(() => {
+    return state.userLocation
+      ? [state.userLocation.lat, state.userLocation.lng]
+      : [40.7128, -74.0060]; // Default to NYC
+  }, [state.userLocation]);
 
-  // Search for a place using Nominatim API
-  const handleSearch = async (e: React.FormEvent) => {
+  // Memoize search handler
+  const handleSearch = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!search.trim()) return;
     setSearchLoading(true);
@@ -214,10 +240,20 @@ const ReliefMap: React.FC = () => {
     } finally {
       setSearchLoading(false);
     }
-  };
+  }, [search, dispatch]);
 
   return (
     <div className="w-full h-full relative overflow-hidden">
+      {/* Weather Widget - Desktop only */}
+      <div className="hidden lg:block absolute top-4 left-4 z-30 w-80 animate-fadeIn">
+        <WeatherWidget showAlerts={true} />
+      </div>
+
+      {/* Compact Weather Widget - Mobile only */}
+      <div className="lg:hidden absolute top-4 left-4 right-4 z-30 animate-fadeIn">
+        <WeatherWidget compact={true} showAlerts={false} />
+      </div>
+
       {/* Search Bar (desktop only) */}
       <form
         onSubmit={handleSearch}
@@ -304,6 +340,6 @@ const ReliefMap: React.FC = () => {
       </div>
     </div>
   );
-};
+});
 
 export default ReliefMap;

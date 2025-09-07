@@ -12,6 +12,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import NotificationDemo from './NotificationDemo';
+import WeatherWidget from './WeatherWidget';
 
 const WelcomeSummaryPage: React.FC<{ onContinue: () => void }> = ({ onContinue }) => {
   return (
@@ -165,8 +166,13 @@ const WelcomeSummaryPage: React.FC<{ onContinue: () => void }> = ({ onContinue }
               <NotificationDemo />
             </div>
 
+            {/* Current Weather */}
+            <div className="animate-fadeIn" style={{ animationDelay: '0.5s' }}>
+              <WeatherWidget showAlerts={true} />
+            </div>
+
             {/* Quick Actions */}
-            <div className="card-floating p-6 animate-fadeIn" style={{ animationDelay: '0.5s' }}>
+            <div className="card-floating p-6 animate-fadeIn" style={{ animationDelay: '0.6s' }}>
               <h3 className="text-xl font-semibold text-gray-900 mb-6">Quick Actions</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <button className="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-left">
@@ -188,7 +194,7 @@ const WelcomeSummaryPage: React.FC<{ onContinue: () => void }> = ({ onContinue }
             </div>
 
             {/* Emergency Contacts */}
-            <div className="card-floating p-6 animate-fadeIn" style={{ animationDelay: '0.6s' }}>
+            <div className="card-floating p-6 animate-fadeIn" style={{ animationDelay: '0.7s' }}>
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Emergency Contacts</h3>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
@@ -209,7 +215,7 @@ const WelcomeSummaryPage: React.FC<{ onContinue: () => void }> = ({ onContinue }
             </div>
 
             {/* Continue Button */}
-            <div className="text-center animate-fadeIn" style={{ animationDelay: '0.7s' }}>
+            <div className="text-center animate-fadeIn" style={{ animationDelay: '0.8s' }}>
               <button
                 onClick={onContinue}
                 className="btn-primary px-8 py-4 text-lg"
