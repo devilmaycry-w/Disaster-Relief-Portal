@@ -90,30 +90,30 @@ const FilterBar: React.FC = () => {
   };
 
   return (
-    <div className="bg-white border-b border-gray-200 px-4 py-3 relative z-40">
+    <div className="glass-strong border-b border-white/20 px-4 py-3 relative z-40 animate-fadeIn">
       {/* Mobile: Horizontal scrollable filter bar */}
       <div className="md:hidden">
-        <div className="flex space-x-2 overflow-x-auto scrollbar-hide pb-1">
+        <div className="flex space-x-3 overflow-x-auto scrollbar-hide pb-1">
           {filterOptions.map(({ type, label, icon: Icon, color, activeColor }) => (
             <button
               key={type}
               onClick={() => handleFilterToggle(type)}
               className={`
-                flex-shrink-0 flex items-center space-x-1 px-3 py-2 rounded-full text-xs font-medium
-                transition-all duration-200 border
+                flex-shrink-0 flex items-center space-x-2 px-4 py-2.5 rounded-2xl text-xs font-semibold
+                transition-all duration-300 border backdrop-blur-md interactive
                 ${isActive(type) 
-                  ? `${activeColor} border-transparent shadow-md` 
-                  : `${color} border-gray-200 hover:shadow-sm`
+                  ? `${activeColor} border-transparent shadow-lg transform scale-105` 
+                  : `${color} border-white/20 hover:shadow-md hover:scale-102`
                 }
               `}
             >
-              <Icon size={14} />
+              <Icon size={16} />
               <span>{label}</span>
               <span className={`
-                ml-1 px-1.5 py-0.5 rounded-full text-xs font-bold
+                ml-1 px-2 py-0.5 rounded-full text-xs font-bold
                 ${isActive(type) 
-                  ? 'bg-white bg-opacity-20' 
-                  : 'bg-black bg-opacity-10'
+                  ? 'bg-white/25 backdrop-blur-sm' 
+                  : 'bg-black/10 backdrop-blur-sm'
                 }
               `}>
                 {getFilterCount(type)}
@@ -126,28 +126,28 @@ const FilterBar: React.FC = () => {
       {/* Desktop: Full filter bar */}
       <div className="hidden md:flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <span className="text-sm font-medium text-gray-700">Filter by type:</span>
-          <div className="flex space-x-2">
+          <span className="text-sm font-semibold text-gray-700">Filter by type:</span>
+          <div className="flex space-x-3">
             {filterOptions.map(({ type, label, icon: Icon, color, activeColor }) => (
               <button
                 key={type}
                 onClick={() => handleFilterToggle(type)}
                 className={`
-                  flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium
-                  transition-all duration-200 border
+                  flex items-center space-x-2 px-5 py-2.5 rounded-xl text-sm font-semibold
+                  transition-all duration-300 border backdrop-blur-md interactive
                   ${isActive(type) 
-                    ? `${activeColor} border-transparent shadow-md transform scale-105` 
-                    : `${color} border-gray-200 hover:shadow-sm hover:transform hover:scale-102`
+                    ? `${activeColor} border-transparent shadow-lg transform scale-105` 
+                    : `${color} border-white/20 hover:shadow-md hover:transform hover:scale-102`
                   }
                 `}
               >
-                <Icon size={16} />
+                <Icon size={18} />
                 <span>{label}</span>
                 <span className={`
-                  ml-1 px-2 py-0.5 rounded-full text-xs font-bold
+                  ml-1 px-2.5 py-1 rounded-full text-xs font-bold
                   ${isActive(type) 
-                    ? 'bg-white bg-opacity-20' 
-                    : 'bg-black bg-opacity-10'
+                    ? 'bg-white/25 backdrop-blur-sm' 
+                    : 'bg-black/10 backdrop-blur-sm'
                   }
                 `}>
                   {getFilterCount(type)}
@@ -158,7 +158,7 @@ const FilterBar: React.FC = () => {
         </div>
 
         {/* Active filters summary */}
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-gray-600 font-medium bg-white/20 px-4 py-2 rounded-full backdrop-blur-md">
           {state.activeFilters.includes('all') 
             ? `Showing all ${state.reports.length} reports`
             : `${state.reports.filter(report => 

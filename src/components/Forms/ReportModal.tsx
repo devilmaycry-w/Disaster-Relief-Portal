@@ -168,14 +168,14 @@ const ReportModal: React.FC = () => {
   if (!state.showReportModal) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end md:items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white w-full max-w-lg rounded-t-2xl md:rounded-2xl max-h-[95vh] overflow-hidden shadow-xl animate-fadeIn">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-end md:items-center justify-center z-50 p-2 sm:p-4 animate-fadeIn">
+      <div className="card-floating w-full max-w-lg max-h-[95vh] overflow-hidden animate-slideUp">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
-          <h2 className="text-lg sm:text-xl font-bold text-gray-900">Submit Report</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 sticky top-0 glass-strong z-10 rounded-t-2xl">
+          <h2 className="text-xl font-bold text-gray-900 text-title">Submit Report</h2>
           <button
             onClick={() => dispatch({ type: 'TOGGLE_REPORT_MODAL', payload: false })}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="p-2 hover:bg-gray-100 rounded-xl transition-all duration-200 interactive"
           >
             <X size={20} />
           </button>
@@ -183,20 +183,21 @@ const ReportModal: React.FC = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="px-4 py-6 space-y-6 max-h-[calc(95vh-64px)] overflow-y-auto scrollbar-hide">
+        <form onSubmit={handleSubmit} className="px-6 py-6 space-y-6 max-h-[calc(95vh-80px)] overflow-y-auto scrollbar-custom">
           {/* Report Type */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <label className="block text-sm font-semibold text-gray-900 mb-4 text-caption">
               Report Type *
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {reportTypes.map(type => (
                 <label
                   key={type.value}
                   className={`
-                    flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer transition-all
+                    flex items-start space-x-3 p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 interactive
                     ${formData.type === type.value
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-blue-500 bg-blue-50 shadow-md'
+                      : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                     }
                   `}
                 >
@@ -208,8 +209,8 @@ const ReportModal: React.FC = () => {
                     className="mt-1"
                   />
                   <div>
-                    <div className="font-medium text-gray-900">{type.label}</div>
-                    <div className="text-sm text-gray-500">{type.description}</div>
+                    <div className="font-semibold text-gray-900 text-caption">{type.label}</div>
+                    <div className="text-sm text-gray-600 text-body">{type.description}</div>
                   </div>
                 </label>
               ))}
@@ -218,7 +219,7 @@ const ReportModal: React.FC = () => {
 
           {/* Title */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 mb-2 text-caption">
               Title *
             </label>
             <input
@@ -227,7 +228,7 @@ const ReportModal: React.FC = () => {
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
               placeholder="Brief, clear title for your report"
               className={`
-                w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                input-field w-full
                 ${errors.title ? 'border-red-500' : 'border-gray-300'}
               `}
               maxLength={100}
@@ -242,7 +243,7 @@ const ReportModal: React.FC = () => {
 
           {/* City */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 mb-2 text-caption">
               City
             </label>
             <input
@@ -250,14 +251,14 @@ const ReportModal: React.FC = () => {
               value={formData.city}
               onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
               placeholder="Enter city name (optional)"
-              className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300"
+              className="input-field w-full"
               maxLength={100}
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 mb-2 text-caption">
               Description *
             </label>
             <textarea
@@ -266,7 +267,7 @@ const ReportModal: React.FC = () => {
               placeholder="Provide detailed information about the situation"
               rows={4}
               className={`
-                w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                input-field w-full resize-none
                 ${errors.description ? 'border-red-500' : 'border-gray-300'}
               `}
               maxLength={500}
@@ -278,7 +279,7 @@ const ReportModal: React.FC = () => {
                   {errors.description}
                 </p>
               )}
-              <p className="text-sm text-gray-500 ml-auto">
+              <p className="text-xs text-gray-500 ml-auto">
                 {formData.description.length}/500
               </p>
             </div>
@@ -286,18 +287,18 @@ const ReportModal: React.FC = () => {
 
           {/* Priority */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <label className="block text-sm font-semibold text-gray-900 mb-3 text-caption">
               Priority Level
             </label>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3">
               {priorityLevels.map(priority => (
                 <label
                   key={priority.value}
                   className={`
-                    flex items-center space-x-2 px-4 py-2 border-2 rounded-lg cursor-pointer transition-all
+                    flex items-center space-x-2 px-4 py-3 border-2 rounded-xl cursor-pointer transition-all duration-200 interactive
                     ${formData.priority === priority.value
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-blue-500 bg-blue-50 shadow-md'
+                      : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                     }
                   `}
                 >
@@ -307,7 +308,7 @@ const ReportModal: React.FC = () => {
                     checked={formData.priority === priority.value}
                     onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value }))}
                   />
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${priority.color}`}>
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${priority.color}`}>
                     {priority.label}
                   </span>
                 </label>
@@ -318,7 +319,7 @@ const ReportModal: React.FC = () => {
           {/* Conditional Fields */}
           {formData.type === 'resources' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-900 mb-2 text-caption">
                 Resource Type *
               </label>
               <input
@@ -327,7 +328,7 @@ const ReportModal: React.FC = () => {
                 onChange={(e) => setFormData(prev => ({ ...prev, resourceType: e.target.value }))}
                 placeholder="e.g., Food, Water, Medicine, Clothing"
                 className={`
-                  w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                  input-field w-full
                   ${errors.resourceType ? 'border-red-500' : 'border-gray-300'}
                 `}
               />
@@ -342,7 +343,7 @@ const ReportModal: React.FC = () => {
 
           {(formData.type === 'safe-zone' || formData.type === 'medical' || formData.type === 'resources') && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-900 mb-2 text-caption">
                 Capacity
               </label>
               <input
@@ -351,7 +352,7 @@ const ReportModal: React.FC = () => {
                 onChange={(e) => setFormData(prev => ({ ...prev, capacity: e.target.value }))}
                 placeholder="Number of people that can be accommodated"
                 className={`
-                  w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                  input-field w-full
                   ${errors.capacity ? 'border-red-500' : 'border-gray-300'}
                 `}
                 min="1"
@@ -367,7 +368,7 @@ const ReportModal: React.FC = () => {
 
           {/* Contact Information */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 mb-2 text-caption">
               Contact Information
             </label>
             <input
@@ -375,30 +376,30 @@ const ReportModal: React.FC = () => {
               value={formData.contact}
               onChange={(e) => setFormData(prev => ({ ...prev, contact: e.target.value }))}
               placeholder="Phone number or other contact info (optional)"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input-field w-full"
             />
           </div>
 
           {/* Location */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 mb-2 text-caption">
               Location
             </label>
-            <div className="space-y-3">
-              <label className="flex items-center space-x-2 cursor-pointer">
+            <div className="space-y-4">
+              <label className="flex items-center space-x-3 cursor-pointer p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
                 <input
                   type="checkbox"
                   checked={formData.useCurrentLocation}
                   onChange={handleLocationToggle}
-                  className="rounded"
+                  className="rounded text-blue-600"
                 />
-                <span className="text-sm text-gray-700">Use my current location</span>
+                <span className="text-sm font-medium text-gray-700">Use my current location</span>
                 <MapPin size={16} className="text-blue-500" />
               </label>
               
               {formData.location && (
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-600">
+                <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                  <p className="text-sm text-blue-700 font-medium">
                     📍 {formData.location.lat.toFixed(4)}, {formData.location.lng.toFixed(4)}
                   </p>
                 </div>
@@ -407,15 +408,15 @@ const ReportModal: React.FC = () => {
           </div>
 
           {/* Submit Button */}
-          <div className="sticky bottom-0 bg-white pt-4 border-t border-gray-200">
+          <div className="sticky bottom-0 glass-strong pt-6 border-t border-gray-200 rounded-b-2xl">
             <button
               type="submit"
               disabled={state.isSubmitting}
-              className="w-full bg-blue-600 text-white py-4 rounded-lg font-medium hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+              className="w-full btn-primary py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {state.isSubmitting ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
                   Submitting Report...
                 </>
               ) : (

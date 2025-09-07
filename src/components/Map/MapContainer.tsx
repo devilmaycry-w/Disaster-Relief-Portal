@@ -217,19 +217,27 @@ const ReliefMap: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full relative overflow-hidden">
       {/* Search Bar */}
-      <form onSubmit={handleSearch} className="absolute top-4 left-1/2 z-30 -translate-x-1/2 w-[90vw] max-w-md flex bg-white rounded-full shadow-lg border border-gray-200 px-2 py-1 items-center gap-2">
-        <Search size={18} className="text-blue-500" />
+      <form onSubmit={handleSearch} className="absolute top-4 left-1/2 z-30 -translate-x-1/2 w-[90vw] max-w-md flex glass-strong rounded-2xl shadow-xl border border-white/30 px-4 py-3 items-center gap-3 animate-fadeIn">
+        <Search size={20} className="text-blue-500" />
         <input
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Search place..."
-          className="flex-1 bg-transparent outline-none px-2 py-1 text-sm"
+          className="flex-1 bg-transparent outline-none text-sm font-medium placeholder-gray-500"
         />
-        <button type="submit" className="text-blue-600 font-semibold px-3 py-1 rounded-full hover:bg-blue-50 transition-all disabled:opacity-60" disabled={searchLoading}>
-          {searchLoading ? '...' : 'Go'}
+        <button 
+          type="submit" 
+          className="text-blue-600 font-semibold px-4 py-2 rounded-xl hover:bg-blue-50 transition-all duration-200 disabled:opacity-60 interactive" 
+          disabled={searchLoading}
+        >
+          {searchLoading ? (
+            <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+          ) : (
+            'Go'
+          )}
         </button>
       </form>
 
@@ -237,7 +245,7 @@ const ReliefMap: React.FC = () => {
         ref={mapRef}
         center={defaultCenter}
         zoom={13}
-        className="w-full h-full z-10"
+        className="w-full h-full z-10 rounded-2xl overflow-hidden shadow-2xl"
         zoomControl={true}
         attributionControl={false}
       >
@@ -275,18 +283,18 @@ const ReliefMap: React.FC = () => {
 
       {/* Loading overlay */}
       {state.isLoading && (
-        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-            <p className="text-sm text-gray-600">Loading relief data...</p>
+        <div className="absolute inset-0 glass-strong flex items-center justify-center z-50 animate-fadeIn">
+          <div className="text-center p-8 card-floating">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+            <p className="text-lg font-semibold text-gray-700 mb-2">Loading relief data...</p>
+            <p className="text-sm text-gray-500">Connecting to real-time updates</p>
           </div>
         </div>
       )}
 
-      {/* Compass and + button area */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4 md:bottom-8 md:right-8">
+      {/* Compass and + button area with enhanced positioning */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4 md:bottom-8 md:right-8 animate-fadeIn" style={{ animationDelay: '0.5s' }}>
         <CompassButton />
-        {/* The + button will appear below this, so they stack vertically */}
       </div>
     </div>
   );

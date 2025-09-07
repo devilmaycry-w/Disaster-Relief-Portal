@@ -43,12 +43,12 @@ function AppInner() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 to-blue-50/30">
       <Header />
       {showSplash ? (
         <SplashScreen onContinue={handleSplashContinue} />
       ) : (
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col animate-fadeIn">
           {renderRoute()}
         </div>
       )}
