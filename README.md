@@ -1,9 +1,7 @@
 # 🚨 ReliefMap - Disaster Relief Platform
 
-> **Hackathon-Ready Dis### 🎨 **Custom Branding**
-- **SVG Favicon**: Custom map-themed favicon using SVG format
-- **Professional Icons**: Consistent iconography throughout the application
-- **Brand Identity**: ReliefMap branding with emergency response theme Response Platform** - Real-time mapping, emergency alerts, and community coordination for flood disasters and emergencies.
+> **ReliefMap** is a real-time disaster relief platform designed for flood emergencies, featuring interactive maps, live alerts, and weather integration. Built with React, Firebase, and Google Maps, it enables community coordination, emergency sharing via WhatsApp, and resource tracking—all optimized for desktop users.
+
 
 [![React](https://img.shields.io/badge/React-18.2.0-blue.svg)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-blue.svg)](https://www.typescriptlang.org/)
@@ -331,16 +329,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Firebase** for backend infrastructure
 - **Open-source community** for amazing tools and libraries
 
----
-
-## 🎉 **Ready for Hackathon Success!**
-
-This platform demonstrates:
-- ✅ **Real-world problem solving** for disaster response
-- ✅ **Modern web technologies** and best practices
-- ✅ **User-centered design** with accessibility
-- ✅ **Scalable architecture** for production deployment
-- ✅ **Community impact** through functional features
 
 **Built with ❤️ for communities in crisis.** 🚨🆘
 
