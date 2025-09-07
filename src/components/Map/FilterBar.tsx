@@ -1,0 +1,174 @@
+import React from 'react';
+import { Heart, Plus, Shield, Package, Users, Filter } from 'lucide-react';
+import { useAppContext } from '../../contexts/AppContext';
+import { FilterType } from '../../types';
+
+const FilterBar: React.FC = () => {
+  const { state, dispatch } = useAppContext();
+  const [isExpanded, setIsExpanded] = React.useState(false);
+
+  const filterOptions = [
+    { 
+      type: 'all' as FilterType, 
+      label: 'All', 
+      icon: Filter, 
+      color: 'bg-gray-100 text-gray-700',
+      activeColor: 'bg-gray-600 text-white'
+    },
+    { 
+      type: 'help-needed' as FilterType, 
+      label: 'Help', 
+      icon: Heart, 
+      color: 'bg-red-100 text-red-700',
+      activeColor: 'bg-red-600 text-white'
+    },
+    { 
+      type: 'medical' as FilterType, 
+      label: 'Medical', 
+      icon: Plus, 
+      color: 'bg-orange-100 text-orange-700',
+      activeColor: 'bg-orange-600 text-white'
+    },
+    { 
+      type: 'safe-zone' as FilterType, 
+      label: 'Safe', 
+      icon: Shield, 
+      color: 'bg-green-100 text-green-700',
+      activeColor: 'bg-green-600 text-white'
+    },
+    { 
+      type: 'resources' as FilterType, 
+      label: 'Resources', 
+      icon: Package, 
+      color: 'bg-blue-100 text-blue-700',
+      activeColor: 'bg-blue-600 text-white'
+    },
+    { 
+      type: 'volunteer' as FilterType, 
+      label: 'Volunteers', 
+      icon: Users, 
+      color: 'bg-purple-100 text-purple-700',
+      activeColor: 'bg-purple-600 text-white'
+    },
+  ];
+
+  const handleFilterToggle = (filterType: FilterType) => {
+    let newFilters: FilterType[];
+    if (filterType === 'all') {
+      newFilters = ['all'];
+    } else {
+      const currentFilters = state.activeFilters.filter(f => f !== 'all');
+      if (currentFilters.includes(filterType)) {
+        newFilters = currentFilters.filter(f => f !== filterType);
+        if (newFilters.length === 0) {
+          newFilters = ['all'];
+        }
+      } else {
+        newFilters = [...currentFilters, filterType];
+      }
+    }
+    dispatch({ type: 'SET_FILTERS', payload: newFilters });
+
+    // Center map on first report of that type
+    if (filterType !== 'all') {
+      const report = state.reports.find(r => r.type === filterType);
+      if (report && report.location) {
+        dispatch({ type: 'SET_MAP_CENTER', payload: { lat: report.location.lat, lng: report.location.lng } });
+        dispatch({ type: 'SET_ROUTE', payload: 'home' });
+      }
+    }
+  };
+
+  const getFilterCount = (type: FilterType) => {
+    if (type === 'all') return state.reports.length;
+    return state.reports.filter(report => report.type === type).length;
+  };
+
+  const isActive = (type: FilterType) => {
+    if (type === 'all') return state.activeFilters.includes('all');
+    return state.activeFilters.includes(type) && !state.activeFilters.includes('all');
+  };
+
+  return (
+    <div className="bg-white border-b border-gray-200 px-4 py-3 relative z-40">
+      {/* Mobile: Horizontal scrollable filter bar */}
+      <div className="md:hidden">
+        <div className="flex space-x-2 overflow-x-auto scrollbar-hide pb-1">
+          {filterOptions.map(({ type, label, icon: Icon, color, activeColor }) => (
+            <button
+              key={type}
+              onClick={() => handleFilterToggle(type)}
+              className={`
+                flex-shrink-0 flex items-center space-x-1 px-3 py-2 rounded-full text-xs font-medium
+                transition-all duration-200 border
+                ${isActive(type) 
+                  ? `${activeColor} border-transparent shadow-md` 
+                  : `${color} border-gray-200 hover:shadow-sm`
+                }
+              `}
+            >
+              <Icon size={14} />
+              <span>{label}</span>
+              <span className={`
+                ml-1 px-1.5 py-0.5 rounded-full text-xs font-bold
+                ${isActive(type) 
+                  ? 'bg-white bg-opacity-20' 
+                  : 'bg-black bg-opacity-10'
+                }
+              `}>
+                {getFilterCount(type)}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop: Full filter bar */}
+      <div className="hidden md:flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <span className="text-sm font-medium text-gray-700">Filter by type:</span>
+          <div className="flex space-x-2">
+            {filterOptions.map(({ type, label, icon: Icon, color, activeColor }) => (
+              <button
+                key={type}
+                onClick={() => handleFilterToggle(type)}
+                className={`
+                  flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium
+                  transition-all duration-200 border
+                  ${isActive(type) 
+                    ? `${activeColor} border-transparent shadow-md transform scale-105` 
+                    : `${color} border-gray-200 hover:shadow-sm hover:transform hover:scale-102`
+                  }
+                `}
+              >
+                <Icon size={16} />
+                <span>{label}</span>
+                <span className={`
+                  ml-1 px-2 py-0.5 rounded-full text-xs font-bold
+                  ${isActive(type) 
+                    ? 'bg-white bg-opacity-20' 
+                    : 'bg-black bg-opacity-10'
+                  }
+                `}>
+                  {getFilterCount(type)}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Active filters summary */}
+        <div className="text-sm text-gray-600">
+          {state.activeFilters.includes('all') 
+            ? `Showing all ${state.reports.length} reports`
+            : `${state.reports.filter(report => 
+                state.activeFilters.includes(report.type)
+              ).length} of ${state.reports.length} reports`
+          }
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default FilterBar;
