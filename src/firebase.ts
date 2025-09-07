@@ -20,16 +20,16 @@ import {
   serverTimestamp,
 } from 'firebase/database';
 
-// Use the RTDB URL you provided
+// Use environment variables for Firebase config
 const firebaseConfig = {
-  apiKey: "AIzaSyBhkt8ROJXIsjS8MPDLa_wpzz9E2dDs09Y",
-  authDomain: "disaster-relief-c986d.firebaseapp.com",
-  databaseURL: "https://disaster-relief-c986d-default-rtdb.firebaseio.com/",
-  projectId: "disaster-relief-c986d",
-  storageBucket: "disaster-relief-c986d.firebasestorage.app",
-  messagingSenderId: "339127226902",
-  appId: "1:339127226902:web:97ccee611af7f6b327db37",
-  measurementId: "G-CY3VD9QSGX"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 let app: ReturnType<typeof initializeApp> | null = null;
